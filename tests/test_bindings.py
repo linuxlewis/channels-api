@@ -292,6 +292,26 @@ class ResourceBindingTestCase(ChannelTestCase):
 
         self.assertEqual(json_content['payload'], expected)
 
+    def test_no_permission(self):
+        instance = TestModel.objects.create(name='some-test')
+
+        json_content = self._send_and_consume('websocket.receive', self._build_message('user:testmodel',{
+            'action': 'update',
+            'pk': instance.id,
+            'data': {'name': 'some-value'},
+            'request_id': 'client-request-id'
+        }))
+
+        expected = {
+            'data': None,
+            'action': 'update',
+            'errors': ['Permission Denied'],
+            'response_status': 401,
+            'request_id': None
+        }
+
+        self.assertEqual(json_content['payload'], expected)
+
     def test_permission(self):
         instance = TestModel.objects.create(name='some-test')
 
@@ -323,22 +343,3 @@ class ResourceBindingTestCase(ChannelTestCase):
         self.assertEqual(json_content['payload'], expected)
 
 
-    def test_permission_failure(self):
-        instance = TestModel.objects.create(name='some-test')
-
-        json_content = self._send_and_consume('websocket.receive', self._build_message('user:testmodel',{
-            'action': 'update',
-            'pk': instance.id,
-            'data': {'name': 'some-value'},
-            'request_id': 'client-request-id'
-        }))
-
-        expected = {
-            'data': None,
-            'action': 'update',
-            'errors': ['Permission Denied'],
-            'response_status': 401,
-            'request_id': None
-        }
-
-        self.assertEqual(json_content['payload'], expected)
