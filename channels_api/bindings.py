@@ -12,7 +12,6 @@ from .mixins import SerializerMixin, SubscribeModelMixin, CreateModelMixin, Upda
 
 
 class ResourceBindingBase(SerializerMixin, websockets.WebsocketBinding):
-
     available_actions = ('create', 'retrieve', 'list', 'update', 'delete', 'subscribe')
     fields = []  # hack to pass cls.register() without ValueError
     queryset = None
@@ -20,6 +19,7 @@ class ResourceBindingBase(SerializerMixin, websockets.WebsocketBinding):
     model = None
     serializer_class = None
     lookup_field = 'pk'
+    permission_classes = ()
 
     def deserialize(self, message):
         body = json.loads(message['text'])
@@ -78,8 +78,13 @@ class ResourceBindingBase(SerializerMixin, websockets.WebsocketBinding):
         else:
             return "{}-{}".format(self.model_label, action)
 
-    def has_permission(self, action, pk, data):
-        return True
+    def has_permission(self, user, action, pk):
+        permissions = True
+
+        for class_permission in self.permission_classes:
+            permission = class_permission().has_permission(user, action, pk)
+            permissions = permission and permissions
+        return permissions
 
     def filter_queryset(self, queryset):
         return queryset
@@ -140,14 +145,14 @@ class ResourceBindingBase(SerializerMixin, websockets.WebsocketBinding):
         }
         return self.message.reply_channel.send(self.encode(self.stream, payload))
 
-class ResourceBinding(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
-    UpdateModelMixin, DeleteModelMixin, SubscribeModelMixin, ResourceBindingBase):
 
+class ResourceBinding(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
+                      UpdateModelMixin, DeleteModelMixin, SubscribeModelMixin, ResourceBindingBase):
     # mark as abstract
     model = None
 
-class ReadOnlyResourceBinding(RetrieveModelMixin, ListModelMixin,
-    ResourceBindingBase):
 
+class ReadOnlyResourceBinding(RetrieveModelMixin, ListModelMixin,
+                              ResourceBindingBase):
     # mark as abstract
     model = None

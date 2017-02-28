@@ -1,12 +1,13 @@
 import json
 
 from django.utils.encoding import force_text
+from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from channels.message import pending_message_store
 from channels.tests import ChannelTestCase, Client
 
-from channels_api import bindings
+from channels_api import bindings, permissions
 from channels_api.settings import api_settings
 
 from .models import TestModel
@@ -26,6 +27,15 @@ class TestModelResourceBinding(bindings.ResourceBinding):
     stream = 'testmodel'
 
 
+class TestPermissionResourceBinding(bindings.ResourceBinding):
+
+    model = TestModel
+    queryset = TestModel.objects.all()
+    serializer_class = TestModelSerializer
+    permission_classes = (permissions.IsAuthenticated, )
+    stream = 'testmodel'
+
+
 class ResourceBindingTestCase(ChannelTestCase):
 
     def setUp(self):
@@ -39,10 +49,16 @@ class ResourceBindingTestCase(ChannelTestCase):
 
     def _get_next_message(self):
         msg = self.client.get_next_message(self.client.reply_channel)
-        return json.loads(msg['text'])
+        try:
+            return json.loads(msg['text'])
+        except Exception:
+            return None
 
     def _build_message(self, stream, payload):
         return {"text": json.dumps({"stream": stream, "payload": payload}), "path": "/"}
+
+    def _build_authentication(self, username, password):
+        return {"username": username, "password": password, "text": "", "path": "/"}
 
     def test_create(self):
         """Integration that asserts routing a message to the create channel.
@@ -272,6 +288,54 @@ class ResourceBindingTestCase(ChannelTestCase):
             'errors': ['Not found.'],
             'response_status': 404,
             'request_id': 'client-request-id'
+        }
+
+        self.assertEqual(json_content['payload'], expected)
+
+    def test_permission(self):
+        instance = TestModel.objects.create(name='some-test')
+
+        User.objects.create_user('john', 'john@snowmanlabs.com', 'johnpassword')
+
+        """Simulating the connection opening by sending username and password """
+        self._send_and_consume('websocket.connect', self._build_authentication('john', 'johnpassword'))
+
+        json_content = self._send_and_consume('websocket.receive', self._build_message('user:testmodel',{
+            'action': 'update',
+            'pk': instance.id,
+            'data': {'name': 'some-value'},
+            'request_id': 'client-request-id'
+        }))
+
+        instance.refresh_from_db()
+
+        expected = {
+            'action': 'update',
+            'errors': [],
+            'data': TestModelSerializer(instance).data,
+            'response_status': 200,
+            'request_id': 'client-request-id'
+        }
+
+        self.assertEqual(json_content['payload'], expected)
+
+
+    def test_permission_failure(self):
+        instance = TestModel.objects.create(name='some-test')
+
+        json_content = self._send_and_consume('websocket.receive', self._build_message('user:testmodel', {
+            'action': 'update',
+            'pk': -1,
+            'data': {'name': 'some-value'},
+            'request_id': 'client-request-id'
+        }))
+
+        expected = {
+            'data': None,
+            'action': 'update',
+            'errors': ['Permission Denied'],
+            'response_status': 401,
+            'request_id': None
         }
 
         self.assertEqual(json_content['payload'], expected)
