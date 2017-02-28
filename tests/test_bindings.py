@@ -307,6 +307,9 @@ class ResourceBindingTestCase(ChannelTestCase):
             'request_id': 'client-request-id'
         }))
 
+        """Simulating the disconnection opening """
+        self._send_and_consume('websocket.disconnect', self._build_authentication('', ''))
+
         instance.refresh_from_db()
 
         expected = {
@@ -323,9 +326,9 @@ class ResourceBindingTestCase(ChannelTestCase):
     def test_permission_failure(self):
         instance = TestModel.objects.create(name='some-test')
 
-        json_content = self._send_and_consume('websocket.receive', self._build_message('user:testmodel', {
+        json_content = self._send_and_consume('websocket.receive', self._build_message('user:testmodel',{
             'action': 'update',
-            'pk': -1,
+            'pk': instance.id,
             'data': {'name': 'some-value'},
             'request_id': 'client-request-id'
         }))
