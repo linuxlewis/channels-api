@@ -58,9 +58,10 @@ def get_username_and_password(message):
     username = message.content.get('username', None)
     password = message.content.get('password', None)
     if username is None:
-        query = parse.parse_qs(message['query_string'])
-        if 'username' not in query:
-            return
-        username = query['username'][0]
-        password = query['password'][0]
+        if 'query_string' in message:
+            query = parse.parse_qs(message['query_string'])
+            if 'username' not in query:
+                return None, None
+            username = query['username'][0]
+            password = query['password'][0]
     return username, password

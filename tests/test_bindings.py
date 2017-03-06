@@ -295,6 +295,9 @@ class ResourceBindingTestCase(ChannelTestCase):
     def test_no_permission(self):
         instance = TestModel.objects.create(name='some-test')
 
+        """Simulating the connection opening"""
+        self._send_and_consume('websocket.connect', {"text": json.dumps({}), "path": "/"})
+
         json_content = self._send_and_consume('websocket.receive', self._build_message('user:testmodel',{
             'action': 'update',
             'pk': instance.id,
