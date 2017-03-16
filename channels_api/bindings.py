@@ -79,12 +79,11 @@ class ResourceBindingBase(SerializerMixin, websockets.WebsocketBinding):
             return "{}-{}".format(self.model_label, action)
 
     def has_permission(self, user, action, pk):
-        permissions = True
-
         for class_permission in self.permission_classes:
-            permission = class_permission().has_permission(user, action, pk)
-            permissions = permission and permissions
-        return permissions
+            if not class_permission().has_permission(user, action, pk):
+                return False
+        else:
+            return True
 
     def filter_queryset(self, queryset):
         return queryset
