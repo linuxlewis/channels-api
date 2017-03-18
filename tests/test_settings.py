@@ -1,3 +1,4 @@
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 SECRET_KEY = 'dog'
 
 DATABASES = {
@@ -21,4 +22,9 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'channels',
     'tests'
+)
+
+AUTHENTICATION_BACKENDS = (
+    # Django
+    'django.contrib.auth.backends.ModelBackend',
 )

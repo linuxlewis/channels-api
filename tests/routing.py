@@ -1,12 +1,13 @@
 from channels import route_class
-from channels.generic.websockets import WebsocketDemultiplexer
-from .test_bindings import TestModelResourceBinding
+from channels_api.routing import Routing
+from .test_bindings import TestModelResourceBinding, TestPermissionResourceBinding
 
 
-class TestDemultiplexer(WebsocketDemultiplexer):
+class TestDemultiplexer(Routing):
 
     consumers = {
-        'testmodel': TestModelResourceBinding.consumer
+        'testmodel': TestModelResourceBinding.consumer,
+        'user:testmodel': TestPermissionResourceBinding.consumer,
     }
 
 channel_routing = [
