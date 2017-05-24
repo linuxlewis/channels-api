@@ -3,6 +3,8 @@ Channels API
 
 .. image:: https://travis-ci.org/linuxlewis/channels-api.svg?branch=master
     :target: https://travis-ci.org/linuxlewis/channels-api
+.. image:: https://codecov.io/gh/linuxlewis/channels-api/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/linuxlewis/channels-api
 
 Channels API exposes a RESTful Streaming API over WebSockets using
 channels. It provides a ``ResourceBinding`` which is comparable to Django
