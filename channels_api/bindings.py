@@ -102,15 +102,18 @@ class ResourceBindingBase(SerializerMixin, websockets.WebsocketBinding):
             return "{}-{}".format(self.model_label, action)
 
     def has_permission(self, user, action, pk):
+        permissions = api_settings.DEFAULT_PERMISSION_CLASSES
+        for cls in permissions:
+            if cls().has_permission(user, action, pk):
+                return True
+
         if self.permission_classes:
             permissions = self.permission_classes
-        else:
-            permissions = api_settings.DEFAULT_PERMISSION_CLASSES
+            for cls in permissions:
+                if cls().has_permission(user, action, pk):
+                    return True
 
-        for cls in permissions:
-            if not cls().has_permission(user, action, pk):
-                return False
-        return True
+        return False
 
     def filter_queryset(self, queryset):
         return queryset
