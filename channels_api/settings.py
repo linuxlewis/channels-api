@@ -3,6 +3,7 @@ from django.conf import settings
 from rest_framework.settings import APISettings
 
 DEFAULTS = {
+    'CHECK_ALL_PERMISSIONS': True,
     'DEFAULT_PAGE_SIZE': 25,
     'DEFAULT_PERMISSION_CLASSES': (
         'channels_api.permissions.AllowAny',
