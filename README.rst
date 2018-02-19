@@ -122,6 +122,29 @@ Started <https://channels.readthedocs.io/en/latest/getting-started.html>`__
 
 That's it. You can now make REST WebSocket requests to the server.
 
+
+-  Bindings within asyncronous tasks using celery (Optional)
+
+To ensure bindings are properly connected to model instances used
+within celery tasks, create a celery function to initialize the bindings
+on celeryd_init.connect
+
+.. code:: Python
+
+    # polls/tasks.py
+    from celery.signals import celeryd_init
+
+    @celeryd_init.connect
+    def register_model_bindings(**kwargs):
+        binding = QuestionBinding
+        model = binding.model
+
+        pre_save.connect(binding.pre_save_receiver, sender=model)
+        post_save.connect(binding.post_save_receiver, sender=model)
+        pre_delete.connect(binding.pre_delete_receiver, sender=model)
+        post_delete.connect(binding.post_delete_receiver, sender=model)
+
+
 .. code:: javascript
 
     var ws = new WebSocket("ws://" + window.location.host + "/")
@@ -155,28 +178,6 @@ That's it. You can now make REST WebSocket requests to the server.
         request_id: "some-guid"
       }
     }
-
--  Bindings within asyncronous tasks using celery (Optional)
-
-To ensure bindings are properly connected to model instances used
-within celery tasks, create a celery function to initialize the bindings
-on celeryd_init.connect
-
-.. code:: Python
-
-    # polls/tasks.py
-    from celery.signals import celeryd_init
-
-    @celeryd_init.connect
-    def register_model_bindings(**kwargs):
-        binding = QuestionBinding
-        model = binding.model
-
-        pre_save.connect(binding.pre_save_receiver, sender=model)
-        post_save.connect(binding.post_save_receiver, sender=model)
-        pre_delete.connect(binding.pre_delete_receiver, sender=model)
-        post_delete.connect(binding.post_delete_receiver, sender=model)
-
 
 -  Add the channels debugger page (Optional)
 
