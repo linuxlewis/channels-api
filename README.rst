@@ -9,7 +9,7 @@ channels. It provides a ``ResourceBinding`` which is comparable to Django
 Rest Framework's ``ModelViewSet``. It is based on DRF serializer
 classes.
 
-It requires Python 2.7 or 3.x, Channels >0.17.3, Django >1.8, and Django Rest Framework 3.0
+It requires Python 2.7 or 3.x, Channels 1.x > 0.17.3 , Django >1.8, and Django Rest Framework 3.0
 
 You can learn more about channels-api from my talk at the `SF Django Meetup <https://vimeo.com/194110172#t=3033>`__ or `PyBay 2016 <https://www.youtube.com/watch?v=HzC_pUhoW0I>`__
 
