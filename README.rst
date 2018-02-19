@@ -9,7 +9,7 @@ channels. It provides a ``ResourceBinding`` which is comparable to Django
 Rest Framework's ``ModelViewSet``. It is based on DRF serializer
 classes.
 
-It requires Python 2.7 or 3.x, Channels >0.17.3, Django >1.8, and Django Rest Framework 3.0
+It requires Python 2.7 or 3.x, Channels 1.x > 0.17.3 , Django >1.8, and Django Rest Framework 3.0
 
 You can learn more about channels-api from my talk at the `SF Django Meetup <https://vimeo.com/194110172#t=3033>`__ or `PyBay 2016 <https://www.youtube.com/watch?v=HzC_pUhoW0I>`__
 
@@ -155,6 +155,28 @@ That's it. You can now make REST WebSocket requests to the server.
         request_id: "some-guid"
       }
     }
+
+-  Bindings within asyncronous tasks using celery (Optional)
+
+To ensure bindings are properly connected to model instances used
+within celery tasks, create a celery function to initialize the bindings
+on celeryd_init.connect
+
+.. code:: Python
+
+    # polls/tasks.py
+    from celery.signals import celeryd_init
+
+    @celeryd_init.connect
+    def register_model_bindings(**kwargs):
+        binding = QuestionBinding
+        model = binding.model
+
+        pre_save.connect(binding.pre_save_receiver, sender=model)
+        post_save.connect(binding.post_save_receiver, sender=model)
+        pre_delete.connect(binding.pre_delete_receiver, sender=model)
+        post_delete.connect(binding.post_delete_receiver, sender=model)
+
 
 -  Add the channels debugger page (Optional)
 
