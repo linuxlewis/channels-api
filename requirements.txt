@@ -1,3 +1,5 @@
-django
-djangorestframework
--e git+git@github.com:django/channels.git#egg=channels
+django>=1.8
+djangorestframework>=3
+git+https://github.com/django/channels.git
+pytest-django
+pytest-asyncio
