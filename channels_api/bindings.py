@@ -108,7 +108,7 @@ class ResourceBindingBase(SerializerMixin, websockets.WebsocketBinding):
             permissions = api_settings.DEFAULT_PERMISSION_CLASSES
 
         for cls in permissions:
-            if not cls().has_permission(user, action, pk):
+            if not cls(self.filter_queryset(self.queryset), self.lookup_field).has_permission(user, action, pk):
                 return False
         return True
 
