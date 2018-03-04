@@ -9,7 +9,7 @@ setup(
     author_email='sbolgert@gmail.com',
     description="Helps build a RESTful API on top of WebSockets using channels.",
     long_description=open('README.rst').read(),
-    license='BSD',
+    license='MIT',
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
