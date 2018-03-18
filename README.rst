@@ -165,7 +165,7 @@ response. It is only designed to be used when ``DEBUG=TRUE``.
 
     # proj/urls.py
 
-    from django.conf.urls import include
+    from django.conf.urls import url, include
 
         urlpatterns = [
             url(r'^channels-api/', include('channels_api.urls'))
